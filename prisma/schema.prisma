@@ -1,0 +1,173 @@
+// Prisma schema file for a normalized database
+// Learn more about Prisma schema files: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Model for News
+model News {
+  id                Int          @id @default(autoincrement())
+  title             String
+  slug              String       @unique
+  content           String
+  publicationDate   DateTime
+  visible           Boolean      @default(true)
+  image             String
+  authorId          Int
+  author            User         @relation(fields: [authorId], references: [id])
+  categories        NewsCategory[]
+  tags              NewsTag[]
+}
+
+// Many-to-many relationship between News and Categories
+model NewsCategory {
+  newsId       Int
+  categoryId   Int
+  news         News       @relation(fields: [newsId], references: [id])
+  category     Category   @relation(fields: [categoryId], references: [id])
+
+  @@id([newsId, categoryId])
+}
+
+// Many-to-many relationship between News and Tags
+model NewsTag {
+  newsId       Int
+  tagId        Int
+  news         News       @relation(fields: [newsId], references: [id])
+  tag          Tag        @relation(fields: [tagId], references: [id])
+
+  @@id([newsId, tagId])
+}
+
+// Model for Categories
+model Category {
+  id          Int               @id @default(autoincrement())
+  name        String            @unique
+  news        NewsCategory[]
+}
+
+// Model for Tags
+model Tag {
+  id          Int               @id @default(autoincrement())
+  name        String            @unique
+  news        NewsTag[]
+}
+
+// Model for Multimedia
+model Multimedia {
+  id      Int     @id @default(autoincrement())
+  title   String
+  type    String
+  source  String
+  link    String
+  visible Boolean @default(true)
+}
+
+// Model for Company Information
+model Company {
+  id              Int     @id @default(autoincrement())
+  name            String
+  description     String
+  email           String
+  phone           String
+  address         String
+  logo            String
+  facebook        String
+  twitter         String
+  instagram       String
+}
+
+// Model for Banners
+model Banner {
+  id      Int     @id @default(autoincrement())
+  title   String
+  link    String
+  image   String
+  visible Boolean @default(true)
+}
+
+// Model for Contests
+model Contest {
+  id            Int          @id @default(autoincrement())
+  title         String
+  description   String
+  startDate     DateTime
+  endDate       DateTime
+  visible       Boolean      @default(true)
+  contestants   UserGroup[]
+}
+
+// Model for Users
+model User {
+  id              Int               @id @default(autoincrement())
+  name            String
+  email           String            @unique
+  password        String
+  authentications Authentication[]
+  groups          UserGroup[]
+  news            News[]            // Inverse relationship with News
+}
+
+// Many-to-many relationship between Users and Groups
+model UserGroup {
+  userId      Int
+  groupId     Int
+  user        User       @relation(fields: [userId], references: [id])
+  group       Group      @relation(fields: [groupId], references: [id])
+  contestId   Int?       // Optional, if the group is a contestant
+  contest     Contest?   @relation(fields: [contestId], references: [id])
+
+  @@id([userId, groupId])
+}
+
+// Model for User Groups (Roles)
+model Group {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  description String
+  permissions GroupPermission[]
+  users       UserGroup[]
+}
+
+// Many-to-many relationship between Groups and Permissions
+model GroupPermission {
+  groupId     Int
+  permissionId Int
+  group       Group       @relation(fields: [groupId], references: [id])
+  permission  Permission  @relation(fields: [permissionId], references: [id])
+
+  @@id([groupId, permissionId])
+}
+
+// Model for Permissions
+model Permission {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  description String
+  groups      GroupPermission[]
+}
+
+// Model for Gallery
+model Gallery {
+  id      Int     @id @default(autoincrement())
+  title   String
+  type    String
+  link    String
+  visible Boolean @default(true)
+}
+
+// Model for Authentication
+model Authentication {
+  id          Int       @id @default(autoincrement())
+  type        String    // Example: "local", "google", "facebook"
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, type])
+}
