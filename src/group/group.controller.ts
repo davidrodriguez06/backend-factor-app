@@ -1,34 +1,51 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  NotFoundException,
+} from '@nestjs/common';
 import { GroupService } from './group.service';
-import { CreateGroupDto } from './dto/create-group.dto';
-import { UpdateGroupDto } from './dto/update-group.dto';
-
-@Controller('group')
+import { Group} from '@prisma/client';
+@Controller('api/group')
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
   @Post()
-  create(@Body() createGroupDto: CreateGroupDto) {
-    return this.groupService.create(createGroupDto);
+  async createGroup(@Body() data:  Group) {
+    return this.groupService.createGroup(data);
   }
 
   @Get()
-  findAll() {
-    return this.groupService.findAll();
+  async getAllGroups() {
+    return this.groupService.getAllGroups();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.groupService.findOne(+id);
+  async getGroupById(@Param('id') id: string) {
+    const groupFound = await this.groupService.getGroupById(+id);
+    if (!groupFound) throw new NotFoundException('Group do not exist');
+    return groupFound;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
-    return this.groupService.update(+id, updateGroupDto);
+  @Put(':id')
+  async updateGroup(@Param('id') id: string, @Body() data: Group) {
+    try {
+      return await this.groupService.updateGroup(+id, data);
+    } catch (error) {
+      throw new NotFoundException('Group do not exist');
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.groupService.remove(+id);
+  async deleteGroup(@Param('id') id: string) {
+    try {
+      return await this.groupService.deleteGroup(+id);
+    } catch (error) {
+      throw new NotFoundException('Group do not exist');
+    }
   }
 }

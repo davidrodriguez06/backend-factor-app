@@ -1,34 +1,51 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-
-@Controller('user')
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  NotFoundException,
+} from '@nestjs/common';
+import { UserService } from './user.service'; 
+import { User} from '@prisma/client';
+@Controller('api/user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  async createUser(@Body() data:  User) {
+    return this.userService.createUser(data);
   }
 
   @Get()
-  findAll() {
-    return this.userService.findAll();
+  async getAllUsers() {
+    return this.userService.getAllUsers();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  async getUserById(@Param('id') id: string) {
+    const userFound = await this.userService.getUserById(+id);
+    if (!userFound) throw new NotFoundException('User do not exist');
+    return userFound;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  @Put(':id')
+  async updateUser(@Param('id') id: string, @Body() data: User) {
+    try {
+      return await this.userService.updateUser(+id, data);
+    } catch (error) {
+      throw new NotFoundException('User do not exist');
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  async deleteUser(@Param('id') id: string) {
+    try {
+      return await this.userService.deleteUser(+id);
+    } catch (error) {
+      throw new NotFoundException('User do not exist');
+    }
   }
 }

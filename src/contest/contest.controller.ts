@@ -1,34 +1,51 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ContestService } from './contest.service';
-import { CreateContestDto } from './dto/create-contest.dto';
-import { UpdateContestDto } from './dto/update-contest.dto';
-
-@Controller('contest')
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  NotFoundException,
+} from '@nestjs/common';
+import { ContestService } from './contest.service'; 
+import { Contest} from '@prisma/client';
+@Controller('api/contest')
 export class ContestController {
   constructor(private readonly contestService: ContestService) {}
 
   @Post()
-  create(@Body() createContestDto: CreateContestDto) {
-    return this.contestService.create(createContestDto);
+  async createContest(@Body() data:  Contest) {
+    return this.contestService.createContest(data);
   }
 
   @Get()
-  findAll() {
-    return this.contestService.findAll();
+  async getAllContests() {
+    return this.contestService.getAllContests();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.contestService.findOne(+id);
+  async getContestById(@Param('id') id: string) {
+    const contestFound = await this.contestService.getContestById(+id);
+    if (!contestFound) throw new NotFoundException('Contest do not exist');
+    return contestFound;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateContestDto: UpdateContestDto) {
-    return this.contestService.update(+id, updateContestDto);
+  @Put(':id')
+  async updateContest(@Param('id') id: string, @Body() data: Contest) {
+    try {
+      return await this.contestService.updateContest(+id, data);
+    } catch (error) {
+      throw new NotFoundException('Contest do not exist');
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.contestService.remove(+id);
+  async deleteContest(@Param('id') id: string) {
+    try {
+      return await this.contestService.deleteContest(+id);
+    } catch (error) {
+      throw new NotFoundException('Contest do not exist');
+    }
   }
 }

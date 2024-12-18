@@ -1,34 +1,53 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  NotFoundException,
+} from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
-import { CreateAuthenticationDto } from './dto/create-authentication.dto';
-import { UpdateAuthenticationDto } from './dto/update-authentication.dto';
-
-@Controller('authentication')
+import { Authentication} from '@prisma/client';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
+@ApiTags('authentication')
+@Controller('api/authentication')
 export class AuthenticationController {
   constructor(private readonly authenticationService: AuthenticationService) {}
 
   @Post()
-  create(@Body() createAuthenticationDto: CreateAuthenticationDto) {
-    return this.authenticationService.create(createAuthenticationDto);
+  async createAuthentication(@Body() data:  Authentication) {
+    return this.authenticationService.createAuthentication(data);
   }
 
   @Get()
-  findAll() {
-    return this.authenticationService.findAll();
+  async getAllAuthentications() {
+    return this.authenticationService.getAllAuthentications();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authenticationService.findOne(+id);
+  async getAuthenticationById(@Param('id') id: string) {
+    const authenticationFound = await this.authenticationService.getAuthenticationById(+id);
+    if (!authenticationFound) throw new NotFoundException('Authentication do not exist');
+    return authenticationFound;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthenticationDto: UpdateAuthenticationDto) {
-    return this.authenticationService.update(+id, updateAuthenticationDto);
+  @Put(':id')
+  async updateAuthentication(@Param('id') id: string, @Body() data: Authentication) {
+    try {
+      return await this.authenticationService.updateAuthentication(+id, data);
+    } catch (error) {
+      throw new NotFoundException('Authentication do not exist');
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authenticationService.remove(+id);
+  async deleteAuthentication(@Param('id') id: string) {
+    try {
+      return await this.authenticationService.deleteAuthentication(+id);
+    } catch (error) {
+      throw new NotFoundException('Authentication do not exist');
+    }
   }
 }

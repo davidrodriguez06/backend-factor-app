@@ -1,26 +1,42 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAuthenticationDto } from './dto/create-authentication.dto';
-import { UpdateAuthenticationDto } from './dto/update-authentication.dto';
+import { Authentication } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AuthenticationService {
-  create(createAuthenticationDto: CreateAuthenticationDto) {
-    return 'This action adds a new authentication';
+  constructor(private prisma: PrismaService) {}
+
+  async getAllAuthentications(): Promise<Authentication[]> {
+    return this.prisma.authentication.findMany();
   }
 
-  findAll() {
-    return `This action returns all authentication`;
+  async getAuthenticationById(id: number): Promise<Authentication> {
+    return this.prisma.authentication.findUnique({
+      where: {
+        id,
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} authentication`;
+  async createAuthentication(data: Authentication): Promise<Authentication> {
+    return this.prisma.authentication.create({
+      data,
+    });
   }
 
-  update(id: number, updateAuthenticationDto: UpdateAuthenticationDto) {
-    return `This action updates a #${id} authentication`;
+  async updateAuthentication(id: number, data: Authentication): Promise<Authentication> {
+    return this.prisma.authentication.update({ 
+      where: { 
+        id }, 
+        data 
+      });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} authentication`;
+  async deleteAuthentication(id: number): Promise<Authentication> {
+    return this.prisma.authentication.delete(
+      {where:{
+        id}
+      }
+    );
   }
 }

@@ -1,34 +1,51 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { CategoryService } from './category.service';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
-
-@Controller('category')
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  NotFoundException,
+} from '@nestjs/common';
+import { CategoryService } from './category.service'; 
+import { Category} from '@prisma/client';
+@Controller('api/category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Post()
-  create(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoryService.create(createCategoryDto);
+  async createCategory(@Body() data:  Category) {
+    return this.categoryService.createCategory(data);
   }
 
   @Get()
-  findAll() {
-    return this.categoryService.findAll();
+  async getAllCategorys() {
+    return this.categoryService.getAllCategorys();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.categoryService.findOne(+id);
+  async getCategoryById(@Param('id') id: string) {
+    const categoryFound = await this.categoryService.getCategoryById(+id);
+    if (!categoryFound) throw new NotFoundException('Category do not exist');
+    return categoryFound;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
-    return this.categoryService.update(+id, updateCategoryDto);
+  @Put(':id')
+  async updateCategory(@Param('id') id: string, @Body() data: Category) {
+    try {
+      return await this.categoryService.updateCategory(+id, data);
+    } catch (error) {
+      throw new NotFoundException('Category do not exist');
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.categoryService.remove(+id);
+  async deleteCategory(@Param('id') id: string) {
+    try {
+      return await this.categoryService.deleteCategory(+id);
+    } catch (error) {
+      throw new NotFoundException('Category do not exist');
+    }
   }
 }

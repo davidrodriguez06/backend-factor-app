@@ -11,7 +11,7 @@ import {
 import { CompanyService } from './company.service';
 import { Company } from '@prisma/client';
 
-@Controller('company')
+@Controller('api/company')
 export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 

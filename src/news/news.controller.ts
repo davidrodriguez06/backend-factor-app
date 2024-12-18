@@ -1,34 +1,51 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { NewsService } from './news.service';
-import { CreateNewsDto } from './dto/create-news.dto';
-import { UpdateNewsDto } from './dto/update-news.dto';
-
-@Controller('news')
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  NotFoundException,
+} from '@nestjs/common';
+import { NewsService } from './news.service'; 
+import { News} from '@prisma/client';
+@Controller('api/news')
 export class NewsController {
   constructor(private readonly newsService: NewsService) {}
 
   @Post()
-  create(@Body() createNewsDto: CreateNewsDto) {
-    return this.newsService.create(createNewsDto);
+  async createNews(@Body() data:  News) {
+    return this.newsService.createNews(data);
   }
 
   @Get()
-  findAll() {
-    return this.newsService.findAll();
+  async getAllNewss() {
+    return this.newsService.getAllNewss();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.newsService.findOne(+id);
+  async getNewsById(@Param('id') id: string) {
+    const newsFound = await this.newsService.getNewsById(+id);
+    if (!newsFound) throw new NotFoundException('News do not exist');
+    return newsFound;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNewsDto: UpdateNewsDto) {
-    return this.newsService.update(+id, updateNewsDto);
+  @Put(':id')
+  async updateNews(@Param('id') id: string, @Body() data:News) {
+    try {
+      return await this.newsService.updateNews(+id, data);
+    } catch (error) {
+      throw new NotFoundException('News do not exist');
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.newsService.remove(+id);
+  async deleteNews(@Param('id') id: string) {
+    try {
+      return await this.newsService.deleteNews(+id);
+    } catch (error) {
+      throw new NotFoundException('News do not exist');
+    }
   }
 }

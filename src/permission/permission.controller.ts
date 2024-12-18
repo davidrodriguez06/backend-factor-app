@@ -1,34 +1,51 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { PermissionService } from './permission.service';
-import { CreatePermissionDto } from './dto/create-permission.dto';
-import { UpdatePermissionDto } from './dto/update-permission.dto';
-
-@Controller('permission')
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  NotFoundException,
+} from '@nestjs/common';
+import { PermissionService } from './permission.service'; 
+import { Permission} from '@prisma/client';
+@Controller('api/permission')
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
 
   @Post()
-  create(@Body() createPermissionDto: CreatePermissionDto) {
-    return this.permissionService.create(createPermissionDto);
+  async createPermission(@Body() data:  Permission) {
+    return this.permissionService.createPermission(data);
   }
 
   @Get()
-  findAll() {
-    return this.permissionService.findAll();
+  async getAllPermissions() {
+    return this.permissionService.getAllPermissions();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.permissionService.findOne(+id);
+  async getPermissionById(@Param('id') id: string) {
+    const permissionFound = await this.permissionService.getPermissionById(+id);
+    if (!permissionFound) throw new NotFoundException('Permission do not exist');
+    return permissionFound;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePermissionDto: UpdatePermissionDto) {
-    return this.permissionService.update(+id, updatePermissionDto);
+  @Put(':id')
+  async updatePermission(@Param('id') id: string, @Body() data: Permission) {
+    try {
+      return await this.permissionService.updatePermission(+id, data);
+    } catch (error) {
+      throw new NotFoundException('Permission do not exist');
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.permissionService.remove(+id);
+  async deletePermission(@Param('id') id: string) {
+    try {
+      return await this.permissionService.deletePermission(+id);
+    } catch (error) {
+      throw new NotFoundException('Permission do not exist');
+    }
   }
 }

@@ -1,26 +1,42 @@
 import { Injectable } from '@nestjs/common';
-import { CreateNewsDto } from './dto/create-news.dto';
-import { UpdateNewsDto } from './dto/update-news.dto';
+import { News } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class NewsService {
-  create(createNewsDto: CreateNewsDto) {
-    return 'This action adds a new news';
+  constructor(private prisma: PrismaService) {}
+
+  async getAllNewss(): Promise<News[]> {
+    return this.prisma.news.findMany();
   }
 
-  findAll() {
-    return `This action returns all news`;
+  async getNewsById(id: number): Promise<News> {
+    return this.prisma.news.findUnique({
+      where: {
+        id,
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} news`;
+  async createNews(data: News): Promise<News> {
+    return this.prisma.news.create({
+      data,
+    });
   }
 
-  update(id: number, updateNewsDto: UpdateNewsDto) {
-    return `This action updates a #${id} news`;
+  async updateNews(id: number, data: News): Promise<News> {
+    return this.prisma.news.update({ 
+      where: { 
+        id }, 
+        data 
+      });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} news`;
+  async deleteNews(id: number): Promise<News> {
+    return this.prisma.news.delete(
+      {where:{
+        id}
+      }
+    );
   }
 }

@@ -1,26 +1,43 @@
 import { Injectable } from '@nestjs/common';
-import { CreateGalleryDto } from './dto/create-gallery.dto';
-import { UpdateGalleryDto } from './dto/update-gallery.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Gallery } from '@prisma/client';
 
 @Injectable()
 export class GalleryService {
-  create(createGalleryDto: CreateGalleryDto) {
-    return 'This action adds a new gallery';
+
+  constructor(private prisma: PrismaService) {}
+
+  async getAllGallery(): Promise<Gallery[]> {
+    return this.prisma.gallery.findMany();
   }
 
-  findAll() {
-    return `This action returns all gallery`;
+  async getGalleryById(id: number): Promise<Gallery> {
+    return this.prisma.gallery.findUnique({
+      where: {
+        id,
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} gallery`;
+  async createGallery(data: Gallery): Promise<Gallery> {
+    return this.prisma.gallery.create({
+      data,
+    });
   }
 
-  update(id: number, updateGalleryDto: UpdateGalleryDto) {
-    return `This action updates a #${id} gallery`;
+  async updateGallery(id: number, data: Gallery): Promise<Gallery> {
+    return this.prisma.gallery.update({ 
+      where: { 
+        id }, 
+        data 
+      });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} gallery`;
+  async deleteGallery(id: number): Promise<Gallery> {
+    return this.prisma.gallery.delete(
+      {where:{
+        id}
+      }
+    );
   }
 }

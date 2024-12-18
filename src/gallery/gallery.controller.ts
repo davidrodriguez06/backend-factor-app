@@ -1,34 +1,50 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  NotFoundException,} from '@nestjs/common';
 import { GalleryService } from './gallery.service';
-import { CreateGalleryDto } from './dto/create-gallery.dto';
-import { UpdateGalleryDto } from './dto/update-gallery.dto';
+import { Gallery } from '@prisma/client';
 
-@Controller('gallery')
+@Controller('api/gallery')
 export class GalleryController {
   constructor(private readonly galleryService: GalleryService) {}
 
   @Post()
-  create(@Body() createGalleryDto: CreateGalleryDto) {
-    return this.galleryService.create(createGalleryDto);
+  async createGallery(@Body() data:  Gallery) {
+    return this.galleryService.createGallery(data);
   }
 
   @Get()
-  findAll() {
-    return this.galleryService.findAll();
+  async getAllGallerys() {
+    return this.galleryService.getAllGallery();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.galleryService.findOne(+id);
+  async getGalleryById(@Param('id') id: string) {
+    const galleryFound = await this.galleryService.getGalleryById(+id);
+    if (!galleryFound) throw new NotFoundException('Gallery do not exist');
+    return galleryFound;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateGalleryDto: UpdateGalleryDto) {
-    return this.galleryService.update(+id, updateGalleryDto);
+  @Put(':id')
+  async updateGallery(@Param('id') id: string, @Body() data: Gallery) {
+    try {
+      return await this.galleryService.updateGallery(+id, data);
+    } catch (error) {
+      throw new NotFoundException('Gallery do not exist');
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.galleryService.remove(+id);
+  async deleteGallery(@Param('id') id: string) {
+    try {
+      return await this.galleryService.deleteGallery(+id);
+    } catch (error) {
+      throw new NotFoundException('Gallery do not exist');
+    }
   }
 }

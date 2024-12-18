@@ -1,26 +1,42 @@
 import { Injectable } from '@nestjs/common';
-import { CreateContestDto } from './dto/create-contest.dto';
-import { UpdateContestDto } from './dto/update-contest.dto';
+import { Contest } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ContestService {
-  create(createContestDto: CreateContestDto) {
-    return 'This action adds a new contest';
+  constructor(private prisma: PrismaService) {}
+
+  async getAllContests(): Promise<Contest[]> {
+    return this.prisma.contest.findMany();
   }
 
-  findAll() {
-    return `This action returns all contest`;
+  async getContestById(id: number): Promise<Contest> {
+    return this.prisma.contest.findUnique({
+      where: {
+        id,
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} contest`;
+  async createContest(data: Contest): Promise<Contest> {
+    return this.prisma.contest.create({
+      data,
+    });
   }
 
-  update(id: number, updateContestDto: UpdateContestDto) {
-    return `This action updates a #${id} contest`;
+  async updateContest(id: number, data: Contest): Promise<Contest> {
+    return this.prisma.contest.update({ 
+      where: { 
+        id }, 
+        data 
+      });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} contest`;
+  async deleteContest(id: number): Promise<Contest> {
+    return this.prisma.contest.delete(
+      {where:{
+        id}
+      }
+    );
   }
 }

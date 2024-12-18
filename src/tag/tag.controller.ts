@@ -1,34 +1,51 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { TagService } from './tag.service';
-import { CreateTagDto } from './dto/create-tag.dto';
-import { UpdateTagDto } from './dto/update-tag.dto';
-
-@Controller('tag')
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  NotFoundException,
+} from '@nestjs/common';
+import { TagService } from './tag.service'; 
+import { Tag} from '@prisma/client';
+@Controller('api/tag')
 export class TagController {
   constructor(private readonly tagService: TagService) {}
 
   @Post()
-  create(@Body() createTagDto: CreateTagDto) {
-    return this.tagService.create(createTagDto);
+  async createTag(@Body() data:  Tag) {
+    return this.tagService.createTag(data);
   }
 
   @Get()
-  findAll() {
-    return this.tagService.findAll();
+  async getAllTags() {
+    return this.tagService.getAllTags();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tagService.findOne(+id);
+  async getTagById(@Param('id') id: string) {
+    const tagFound = await this.tagService.getTagById(+id);
+    if (!tagFound) throw new NotFoundException('Tag do not exist');
+    return tagFound;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTagDto: UpdateTagDto) {
-    return this.tagService.update(+id, updateTagDto);
+  @Put(':id')
+  async updateTag(@Param('id') id: string, @Body() data: Tag) {
+    try {
+      return await this.tagService.updateTag(+id, data);
+    } catch (error) {
+      throw new NotFoundException('Tag do not exist');
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tagService.remove(+id);
+  async deleteTag(@Param('id') id: string) {
+    try {
+      return await this.tagService.deleteTag(+id);
+    } catch (error) {
+      throw new NotFoundException('Tag do not exist');
+    }
   }
 }
